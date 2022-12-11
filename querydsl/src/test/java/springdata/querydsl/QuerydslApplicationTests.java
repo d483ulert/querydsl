@@ -15,10 +15,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest
 @Transactional
 class QuerydslApplicationTests {
-
 	@Autowired
 	EntityManager em;
-
 	@Test
 	void contextLoads(){
 		Hello hello=new Hello();
