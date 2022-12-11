@@ -22,6 +22,7 @@ public class QuetydslBasicTest {
 
     @BeforeEach
     public void before(){
+        System.out.println("********************초기화");
         Team teamA = new Team("teamA");
         Team teamB = new Team("teamB");
 
@@ -63,4 +64,26 @@ public class QuetydslBasicTest {
 
     }
 
+    @Test
+    public void search(){
+        Member findMember = queryFactory
+                .selectFrom(member)
+                .where(member.username.eq("member1").and(member.age.eq(10)))
+                .fetchOne();
+
+        assertThat(findMember.getUsername()).isEqualTo("member1");
+    }
+
+    @Test
+    public void searchAndParam(){
+        Member findMember = queryFactory
+                .selectFrom(member)
+                .where(
+                        member.username.eq("member1"),
+                        (member.age.eq(10))
+                )
+                .fetchOne();
+
+        assertThat(findMember.getUsername()).isEqualTo("member1");
+    }
 }
