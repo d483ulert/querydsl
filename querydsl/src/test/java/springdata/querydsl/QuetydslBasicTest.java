@@ -7,10 +7,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 import springdata.querydsl.entity.Member;
-import springdata.querydsl.entity.QMember;
 import springdata.querydsl.entity.Team;
 import javax.persistence.EntityManager;
 import static org.assertj.core.api.Assertions.assertThat;
+import static springdata.querydsl.entity.QMember.member;
 
 @SpringBootTest
 @Transactional
@@ -52,13 +52,15 @@ public class QuetydslBasicTest {
 
     @Test
     public void startQuerydsl(){
-        QMember m = new QMember("m");
-        Member findmember = queryFactory.select(m)
-                .from(m)
-                .where(m.username.eq("member1"))
+        //member = QMember임
+        Member findmember = queryFactory
+                .select(member)
+                .from(member)
+                .where(member.username.eq("member1"))
                 .fetchOne();
-
+        System.out.println("************"+findmember);
         assertThat(findmember.getUsername()).isEqualTo("member1");
 
     }
+
 }
