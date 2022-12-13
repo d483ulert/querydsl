@@ -4,12 +4,13 @@ import com.querydsl.core.QueryResults;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 import springdata.querydsl.entity.Member;
+import springdata.querydsl.entity.QMember;
 import springdata.querydsl.entity.Team;
 import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static springdata.querydsl.entity.QMember.member;
@@ -18,7 +19,7 @@ import static springdata.querydsl.entity.QMember.member;
 @Transactional
 public class QuetydslBasicTest {
 
-    @Autowired
+    @PersistenceContext
     EntityManager em;
     JPAQueryFactory queryFactory; //동시성 문제 없음. 멀티쓰레드에서 아무문제없음. 트랜잭션 단위에 따라 사용됨
 
@@ -59,6 +60,16 @@ public class QuetydslBasicTest {
     @Test
     public void startQuerydsl(){
         //member = QMember임
+
+      /*  JPAQueryFactory queryFactory = new JPAQueryFactory(em);
+        QMember m = new QMember("m");
+        Member findMember = queryFactory
+                .select(m)
+                .from(m)
+                .where(m.username.eq("member1"))//파라미터 바인딩 처리
+                .fetchOne();
+        assertThat(findMember.getUsername()).isEqualTo("member1");*/
+
         Member findmember = queryFactory
                 .select(member)
                 .from(member)
@@ -103,7 +114,6 @@ public class QuetydslBasicTest {
         Member fetchOne = queryFactory
                 .selectFrom(member)
                 .fetchOne();
-
         // limit 1과 똑같음
         Member fetchFirst = queryFactory
                 .selectFrom(member)
@@ -148,4 +158,33 @@ public class QuetydslBasicTest {
         assertThat(memberNull.getUsername()).isNull();
 
     }
+
+    @Test
+    public void Paging1(){
+        List<Member> result = queryFactory
+                .selectFrom(member)
+                .orderBy(member.username.desc())
+                .offset(1)
+                .limit(2)
+                .fetch();
+
+        assertThat(result.size()).isEqualTo(2);
+    }
+
+    //count쿼리 한번, content쿼리 한 번 나가는 fetchResult
+    @Test
+    public void Paging2(){
+        QueryResults<Member> result = queryFactory
+                .selectFrom(member)
+                .orderBy(member.username.desc())
+                .offset(1)
+                .limit(2)
+                .fetchResults();
+
+        assertThat(result.getTotal()).isEqualTo(4);
+        assertThat(result.getLimit()).isEqualTo(2);
+        assertThat(result.getOffset()).isEqualTo(1);
+        assertThat(result.getResults().size()).isEqualTo(2);
+    }
+
 }
