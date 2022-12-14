@@ -2,21 +2,22 @@ package springdata.querydsl;
 
 import com.querydsl.core.QueryResults;
 import com.querydsl.core.Tuple;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 import springdata.querydsl.entity.Member;
 import springdata.querydsl.entity.QMember;
-import springdata.querydsl.entity.QTeam;
 import springdata.querydsl.entity.Team;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceUnit;
 import java.util.List;
+
+import static com.querydsl.jpa.JPAExpressions.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static springdata.querydsl.entity.QMember.member;
 import static springdata.querydsl.entity.QTeam.team;
@@ -324,6 +325,7 @@ public class QuetydslBasicTest {
         }
     }
 
+    //조인 - 페치 조인
     @PersistenceUnit
     EntityManagerFactory emf;
     @Test
@@ -358,5 +360,88 @@ public class QuetydslBasicTest {
         boolean loaded = emf.getPersistenceUnitUtil().isLoaded(result.getTeam());//초기화 된 Entity인지 아닌지 알려줌
         assertThat(loaded).as("페치조인미적용").isTrue();
     }
+    
+    //서브쿼리
+    /*
+    * 나이가 가장 많은 회원 조회
+    * */
+    @Test
+    public void subQuery(){
+        //서브쿼리이기 때문에 밖의  QMember와 ALias가 겹치면 안된다. 다르게선언
+        QMember memberSub = new QMember("memberSub");
 
+        List<Member> result = queryFactory
+                .selectFrom(member)
+                .where(member.age.eq(
+                        select(memberSub.age.max())
+                                .from(memberSub)
+                ))
+                .fetch();
+
+        assertThat(result)
+                .extracting("age")
+                .containsExactly(40);
+    }
+
+    /*
+     * 나이가 평균 이상인 회원
+     * */
+    @Test
+    public void subQueryGoe(){
+        //서브쿼리이기 때문에 밖의  QMember와 ALias가 겹치면 안된다. 다르게선언
+        QMember memberSub = new QMember("memberSub");
+
+        List<Member> result = queryFactory
+                .selectFrom(member)
+                .where(member.age.goe(  //goe 크거나 혹은 같다
+                        select(memberSub.age.avg())
+                                .from(memberSub)
+                ))
+                .fetch();
+
+        assertThat(result)
+                .extracting("age")
+                .containsExactly(30,40);
+    }
+
+    /*
+     * 나이가 평균 이상인 회원
+     * */
+    @Test
+    public void subQueryIn(){
+        //서브쿼리이기 때문에 밖의  QMember와 ALias가 겹치면 안된다. 다르게선언
+        QMember memberSub = new QMember("memberSub");
+
+        List<Member> result = queryFactory
+                .selectFrom(member)
+                .where(member.age.in(  //goe 크거나 혹은 같다
+                        select(memberSub.age)
+                                .from(memberSub)
+                                .where(memberSub.age.gt(10))
+                ))
+                .fetch();
+
+        assertThat(result)
+                .extracting("age")
+                .containsExactly(20,30,40);
+    }
+
+    @Test
+    public void selectSubQuery(){
+        QMember memberSub = new QMember("memberSub");
+        List<Tuple> result = queryFactory
+                .select(member.username,
+                        select(memberSub.age.avg())
+                                .from(memberSub))
+                .from(member)
+                .fetch();
+        for (Tuple tuple : result) {
+            System.out.println("***tuple"+tuple);
+        }
+    }
+
+    //from절 서브쿼리(인라인뷰)는 지원하지않는다.
+    //서브쿼리를 join으로 바꿔서사용.
+    //애플리케이션에서 쿼리를 2번 분리해서 실행
+    // native SQL을 사용
 }
