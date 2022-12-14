@@ -13,7 +13,9 @@ import springdata.querydsl.entity.QMember;
 import springdata.querydsl.entity.QTeam;
 import springdata.querydsl.entity.Team;
 import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceUnit;
 import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static springdata.querydsl.entity.QMember.member;
@@ -321,4 +323,40 @@ public class QuetydslBasicTest {
             System.out.println("***tuple"+tuple);
         }
     }
+
+    @PersistenceUnit
+    EntityManagerFactory emf;
+    @Test
+    public void NofetchJoin(){
+        em.flush();
+        em.clear();
+
+        Member result = queryFactory
+                .selectFrom(member)
+                .where(member.username.eq("member1"))
+                .fetchOne();
+
+        System.out.println("***Result"+result);
+
+        boolean loaded = emf.getPersistenceUnitUtil().isLoaded(result.getTeam());//초기화 된 Entity인지 아닌지 알려줌
+        assertThat(loaded).as("페치조인미적용").isFalse();
+    }
+
+    @Test
+    public void UsefetchJoin(){
+        em.flush();
+        em.clear();
+
+        Member result = queryFactory
+                .selectFrom(member)
+                .join(member.team,team).fetchJoin()
+                .where(member.username.eq("member1"))
+                .fetchOne();
+
+        System.out.println("***Result"+result);
+
+        boolean loaded = emf.getPersistenceUnitUtil().isLoaded(result.getTeam());//초기화 된 Entity인지 아닌지 알려줌
+        assertThat(loaded).as("페치조인미적용").isTrue();
+    }
+
 }
