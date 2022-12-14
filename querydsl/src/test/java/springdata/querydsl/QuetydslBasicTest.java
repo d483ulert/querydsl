@@ -6,6 +6,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 import springdata.querydsl.entity.Member;
 import springdata.querydsl.entity.QMember;
@@ -24,10 +25,12 @@ public class QuetydslBasicTest {
 
     @PersistenceContext
     EntityManager em;
-    JPAQueryFactory queryFactory; //동시성 문제 없음. 멀티쓰레드에서 아무문제없음. 트랜잭션 단위에 따라 사용됨
 
+    JPAQueryFactory queryFactory = new JPAQueryFactory(em);//동시성 문제 없음. 멀티쓰레드에서 아무문제없음. 트랜잭션 단위에 따라 사용됨
     @BeforeEach
     public void before(){
+        queryFactory = new JPAQueryFactory(em);
+
         System.out.println("********************초기화");
         Team teamA = new Team("teamA");
         Team teamB = new Team("teamB");
@@ -276,5 +279,46 @@ public class QuetydslBasicTest {
         assertThat(result)
                 .extracting("username")
                 .containsExactly("teamA","teamB");
+    }
+
+    /*
+    *  회원과 팀을 조인하면서, 팀 이름이 teamA인 팀만 조인,회원은 모두 조회
+    *  JPQL: select m,t from Member m left join m.team t on t.name = 'teamA'
+    * */
+    @Test
+    public void join_on_filtering(){
+        List<Tuple> result = queryFactory
+                .select(member, team)
+                .from(member)
+                .leftJoin(member.team, team) //id값 매칭
+                .on(team.name.eq("teamA"))
+                .fetch();
+        for(Tuple tuple: result){
+            System.out.println("tuple: "+tuple);
+        }
+    }
+
+    /**
+     * 연관관계 없는 엔티티 외부 조인
+     *  예) 회원의 이름과 팀의 이름이 같은 대상 외부 조인
+     *  JPQL: select m, t from Member m left join team t on m.username = t.name
+     *  SQL: select m.*, t.* from member m left join team t on m.username= t.name
+     * */
+
+    @Test
+    public void join_on_no_relation(){
+        em.persist(new Member("teamA"));
+        em.persist(new Member("teamB"));
+        em.persist(new Member("teamC"));
+
+        List<Tuple> result = queryFactory
+                .select(member, team)
+                .from(member)
+                .leftJoin(team).on(member.username.eq(team.name)) //id값 매칭x 막조인
+                .fetch();
+
+        for (Tuple tuple : result) {
+            System.out.println("***tuple"+tuple);
+        }
     }
 }
