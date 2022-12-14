@@ -2,6 +2,8 @@ package springdata.querydsl;
 
 import com.querydsl.core.QueryResults;
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.dsl.CaseBuilder;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.junit.jupiter.api.BeforeEach;
@@ -444,4 +446,61 @@ public class QuetydslBasicTest {
     //서브쿼리를 join으로 바꿔서사용.
     //애플리케이션에서 쿼리를 2번 분리해서 실행
     // native SQL을 사용
+
+
+    //케이스문
+    @Test
+    public void basicCase(){
+        List<String> result = queryFactory
+                .select(member.age
+                        .when(10).then("열살")
+                        .when(20).then("스무살")
+                        .otherwise("기타"))
+                .from(member)
+                .fetch();
+        for (String s : result) {
+            System.out.println("*******ss"+s);
+        }
+    }
+
+    @Test
+    public void complexCase(){
+        List<String> result = queryFactory
+                .select(new CaseBuilder()
+                        .when(member.age.between(0, 20)).then("20대")
+                        .when(member.age.between(21, 40)).then("노인")
+                        .otherwise("기타")
+                )
+                .from(member)
+                .fetch();
+
+        for (String s : result) {
+            System.out.println("ssss****"+s);
+        }
+    }
+
+    //상수 문자 더하기
+    @Test
+    public void constant(){
+        List<Tuple> result
+                = queryFactory
+                .select(member.username, Expressions.constant("A"))
+                .from(member)
+                .fetch();
+        for (Tuple tuple : result) {
+            System.out.println("*****result"+result);
+        }
+    }
+    @Test
+    public void concat(){
+        List<String> result = queryFactory
+                .select(member.username.concat("_").concat(member.age.stringValue()))
+                .from(member)
+                .fetch();
+
+        for (String s : result) {
+            System.out.println("ssss***"+s);
+        }
+    }
+
 }
