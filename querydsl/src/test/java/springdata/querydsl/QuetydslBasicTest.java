@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 import springdata.querydsl.dto.MemberDto;
+import springdata.querydsl.dto.QMemberDto;
 import springdata.querydsl.dto.UserDto;
 import springdata.querydsl.entity.Member;
 import springdata.querydsl.entity.QMember;
@@ -610,6 +611,18 @@ public class QuetydslBasicTest {
 
         for (UserDto userDto : result) {
             System.out.println("******"+userDto);
+        }
+    }
+
+    @Test
+    public void findDtoByQueryProjection(){
+        List<MemberDto> result = queryFactory
+                .select(new QMemberDto(member.username, member.age))
+                .from(member)
+                .fetch();
+
+        for (MemberDto memberDto : result) {
+            System.out.println("ggggg"+memberDto);
         }
     }
 
