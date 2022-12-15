@@ -503,4 +503,33 @@ public class QuetydslBasicTest {
         }
     }
 
+    //프로젝션과 결과반환-기본
+    @Test
+    public void simpleProjection(){
+        //String,int,Member 등 한번에 조회
+        List<String> result = queryFactory
+                .select(member.username)
+                .from(member)
+                .fetch();
+        for (String s : result) {
+            System.out.println("sssssss: "+s);
+        }
+    }
+
+    @Test
+    public void tupleProejction(){
+        List<Tuple> result = queryFactory
+                .select(member.username, member.age)
+                .from(member)
+                .fetch();
+        for (Tuple tuple : result) {
+            String username = tuple.get(member.username);
+            int age = tuple.get(member.age);
+            System.out.println("username: "+username);
+            System.out.println("age: "+age);
+        }
+
+        //Tuple로 받아도 결국 DTO로 반환해서 내보낼것.
+
+    }
 }
