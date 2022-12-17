@@ -684,4 +684,27 @@ public class QuetydslBasicTest {
        return usernameEq(usernameCond).and(ageEq(ageCond)); // null 처리 해야함
     }
 
+    //수정, 삭제 벌크 연산
+    @Test
+    public void bulkUpdate(){
+        long count = queryFactory.update(member)
+                .set(member.username, "비회원")
+                .where(member.age.lt(28))
+                .execute();
+        // count는 영향을 받은 row 수
+        em.flush();  //영속성 컨텍스트에 남아있는거 flush  하고 그뒤에 select 해야함. 안그러면 db와 영속성 컨텍스트간 데이터가 안맞음
+        em.clear();
+
+        System.out.println("count**"+count);
+    }
+
+    @Test
+    public void bulkDelete(){
+        long execute = queryFactory.delete(member)
+                .where(member.age.eq(20))
+                .execute();
+
+        em.flush();
+        em.clear();
+    }
 }
