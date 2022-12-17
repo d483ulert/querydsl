@@ -707,4 +707,19 @@ public class QuetydslBasicTest {
         em.flush();
         em.clear();
     }
+
+    //SQL function 호출하기
+    @Test
+    public void sqlFunction(){
+        List<String> fetch = queryFactory
+                .select(Expressions.stringTemplate(
+                        "replace({0},'member','m')",
+                        member.username))
+                .from(member)
+                .fetch();
+
+        for (String s : fetch) {
+            System.out.println(s+" ssssssssssss");
+        }
+    }
 }
