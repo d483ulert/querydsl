@@ -97,6 +97,8 @@ public class MemberJpaRepository {
 
     //김영한이 좋아하는... 동적 쿼리와 성능 최적화 조회 - Where절 파라미터 사용
     public List<MemberTeamDto> search(MemberSearchCondition condition){
+        System.out.println(condition+"\n************");
+
         return queryFactory
                 .select(new QMemberTeamDto(
                         member.id.as("memberId"),
@@ -106,7 +108,7 @@ public class MemberJpaRepository {
                         team.name.as("teamName")))
                 .from(member)
                 .leftJoin(member.team,team)
-                .where(usernameEq(condition.getUsername()),
+               .where(usernameEq(condition.getUsername()),
                         teamNameEq(condition.getTeamName()),
                         ageGoe(condition.getAgeGoe()),
                         ageLoe(condition.getAgeLoe())
@@ -118,9 +120,8 @@ public class MemberJpaRepository {
     private BooleanExpression usernameEq(String username) {
         return isEmpty(username) ? null : member.username.eq(username);
     }
-
     private BooleanExpression teamNameEq(String teamName) {
-        return hasText(teamName) ? null : team.name.eq(teamName);
+        return isEmpty(teamName) ? null : team.name.eq(teamName);
     }
     private BooleanExpression ageGoe(Integer ageGoe) {
         return ageGoe != null ? member.age.goe(ageGoe) : null;
