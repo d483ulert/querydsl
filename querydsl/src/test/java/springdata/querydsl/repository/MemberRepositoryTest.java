@@ -3,6 +3,8 @@ package springdata.querydsl.repository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import springdata.querydsl.dto.MemberSearchCondition;
+import springdata.querydsl.dto.MemberTeamDto;
 import springdata.querydsl.entity.Member;
 
 import javax.persistence.EntityManager;
@@ -32,6 +34,12 @@ public class MemberRepositoryTest {
 
         List<Member> result2 = memberRepository.findByUsername("member1");
         assertThat(result2).containsExactly(member);
+
+        MemberSearchCondition condition = new MemberSearchCondition();
+        List<MemberTeamDto> search = memberRepository.search(condition);
+        for (MemberTeamDto memberTeamDto : search) {
+            System.out.println("memberTe222222amDto"+memberTeamDto);
+        }
 
     }
 }
