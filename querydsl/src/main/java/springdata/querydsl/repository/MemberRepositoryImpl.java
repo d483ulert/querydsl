@@ -1,14 +1,18 @@
 package springdata.querydsl.repository;
 
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.support.PageableExecutionUtils;
 import springdata.querydsl.dto.MemberSearchCondition;
 import springdata.querydsl.dto.MemberTeamDto;
 import springdata.querydsl.dto.QMemberTeamDto;
 import javax.persistence.EntityManager;
 import org.springframework.data.domain.Pageable;
+import springdata.querydsl.entity.Member;
+
 import java.util.List;
 import static org.aspectj.util.LangUtil.isEmpty;
 import static springdata.querydsl.entity.QMember.member;
@@ -88,17 +92,17 @@ public class MemberRepositoryImpl implements MemberRepositoryCustom{
                 .limit(pageable.getPageSize())
                 .fetch();
 
-        long total = factory.select(member)
+        JPAQuery<Member> countQuery = factory.select(member)
                 .from(member)
                 .leftJoin(member.team,team)
                 .where(usernameEq(condition.getUsername()),
                         teamNameEq(condition.getTeamName()),
                         ageGoe(condition.getAgeGoe()),
                         ageLoe(condition.getAgeLoe())
-                ).fetchCount();
+                );
 
 
-        return new PageImpl<>(content,pageable,total);
+        return PageableExecutionUtils.getPage(content,pageable,countQuery::fetchCount);
     }
 
 
