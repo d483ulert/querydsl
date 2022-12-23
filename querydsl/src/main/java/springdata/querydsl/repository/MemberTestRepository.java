@@ -36,9 +36,31 @@ public class MemberTestRepository extends Querydsl4RepositorySupport {
     }
 
     public Page<Member> applyPagination(MemberSearchCondition condition, Pageable pageable){
-      applyPagination(pageable,query -> query
-
-      )
+      return applyPagination(pageable,query ->
+            query
+            .selectFrom(member)
+            .where(usernameEq(condition.getUsername()),
+                    teamNameEq(condition.getTeamName()),
+                    ageGoe(condition.getAgeGoe()),
+                    ageLoe(condition.getAgeLoe()))
+      );
+    }
+    public Page<Member> applyPagination2(MemberSearchCondition condition, Pageable pageable){
+        return applyPagination(pageable,contentQuery -> contentQuery
+                .selectFrom(member)
+                .where(usernameEq(condition.getUsername()),
+                        teamNameEq(condition.getTeamName()),
+                        ageGoe(condition.getAgeGoe()),
+                        ageLoe(condition.getAgeLoe())
+                ),countQuery -> countQuery
+                .select(member.id)
+                .from(member)
+                .leftJoin(member.team,team)
+                .where(usernameEq(condition.getUsername()),
+                        teamNameEq(condition.getTeamName()),
+                        ageGoe(condition.getAgeGoe()),
+                        ageLoe(condition.getAgeLoe()))
+                );
     }
 
     private BooleanExpression usernameEq (String username){
