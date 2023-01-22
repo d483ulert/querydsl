@@ -97,7 +97,6 @@ public class MemberJpaRepository {
 
     //김영한이 좋아하는... 동적 쿼리와 성능 최적화 조회 - Where절 파라미터 사용
     public List<MemberTeamDto> search(MemberSearchCondition condition){
-        System.out.println(condition+"\n************");
 
         return queryFactory
                 .select(new QMemberTeamDto(

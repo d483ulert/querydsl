@@ -12,7 +12,6 @@ import springdata.querydsl.dto.QMemberTeamDto;
 import javax.persistence.EntityManager;
 import org.springframework.data.domain.Pageable;
 import springdata.querydsl.entity.Member;
-
 import java.util.List;
 import static org.aspectj.util.LangUtil.isEmpty;
 import static springdata.querydsl.entity.QMember.member;
