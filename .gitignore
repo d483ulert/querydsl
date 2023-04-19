@@ -21,6 +21,7 @@ target/
 *.iml
 *.ipr
 *.class
+src/main/generated/
 
 ### NetBeans ###
 /nbproject/private/
