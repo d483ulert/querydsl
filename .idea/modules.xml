@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/querydsl.iml" filepath="$PROJECT_DIR$/.idea/querydsl.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/springdata.querydsl.main.iml" filepath="$PROJECT_DIR$/.idea/modules/springdata.querydsl.main.iml" />
     </modules>
   </component>
 </project>
